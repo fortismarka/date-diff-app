@@ -1,21 +1,6 @@
 import { useState, useEffect } from "react";
 
-const US_FEDERAL_HOLIDAYS = (year) => [
-  new Date(year, 0, 1),   // New Year's Day
-  new Date(year, 0, 20),  // MLK Day (3rd Mon Jan - approximate, recalculated below)
-  new Date(year, 1, 17),  // Presidents Day (3rd Mon Feb - approximate)
-  new Date(year, 4, 26),  // Memorial Day (last Mon May - approximate)
-  new Date(year, 5, 19),  // Juneteenth
-  new Date(year, 6, 4),   // Independence Day
-  new Date(year, 8, 1),   // Labor Day (1st Mon Sep - approximate)
-  new Date(year, 9, 13),  // Columbus Day (2nd Mon Oct - approximate)
-  new Date(year, 10, 11), // Veterans Day
-  new Date(year, 10, 27), // Thanksgiving (4th Thu Nov - approximate)
-  new Date(year, 11, 25), // Christmas
-];
-
 function getNthWeekday(year, month, weekday, n) {
-  // n=1 means first, n=-1 means last
   if (n > 0) {
     let d = new Date(year, month, 1);
     while (d.getDay() !== weekday) d.setDate(d.getDate() + 1);
@@ -30,25 +15,28 @@ function getNthWeekday(year, month, weekday, n) {
 
 function getFederalHolidays(year) {
   const holidays = [
-    new Date(year, 0, 1),                         // New Year's Day
-    getNthWeekday(year, 0, 1, 3),                  // MLK Day
-    getNthWeekday(year, 1, 1, 3),                  // Presidents Day
-    getNthWeekday(year, 4, 1, -1),                 // Memorial Day
-    new Date(year, 5, 19),                         // Juneteenth
-    new Date(year, 6, 4),                          // Independence Day
-    getNthWeekday(year, 8, 1, 1),                  // Labor Day
-    getNthWeekday(year, 9, 1, 2),                  // Columbus Day
-    new Date(year, 10, 11),                        // Veterans Day
-    getNthWeekday(year, 10, 4, 4),                 // Thanksgiving
-    new Date(year, 11, 25),                        // Christmas
+    new Date(year, 0, 1),
+    getNthWeekday(year, 0, 1, 3),
+    getNthWeekday(year, 1, 1, 3),
+    getNthWeekday(year, 4, 1, -1),
+    new Date(year, 5, 19),
+    new Date(year, 6, 4),
+    getNthWeekday(year, 8, 1, 1),
+    getNthWeekday(year, 9, 1, 2),
+    new Date(year, 10, 11),
+    getNthWeekday(year, 10, 4, 4),
+    new Date(year, 11, 25),
   ];
-  // Observed rules: if holiday falls on Saturday, observe Friday; Sunday -> Monday
   return holidays.map(h => {
     const d = new Date(h);
     if (d.getDay() === 6) d.setDate(d.getDate() - 1);
     if (d.getDay() === 0) d.setDate(d.getDate() + 1);
     return d.toDateString();
   });
+}
+
+function roundToQuarter(value) {
+  return Math.round(value * 4) / 4;
 }
 
 function calcDiffs(date1, date2) {
@@ -60,18 +48,20 @@ function calcDiffs(date1, date2) {
 
   const msPerDay = 86400000;
   const calendarDays = Math.round((end - start) / msPerDay);
+  const rawMonths = calendarDays / 30.4375;
+  const months = roundToQuarter(rawMonths);
+  const weeks = Math.floor(calendarDays / 7);
 
   let businessDays = 0;
   let businessDaysMinusHolidays = 0;
 
-  // Collect all holiday strings for years in range
   const holidaySet = new Set();
   for (let y = start.getFullYear(); y <= end.getFullYear(); y++) {
     getFederalHolidays(y).forEach(h => holidaySet.add(h));
   }
 
   const cur = new Date(start);
-  cur.setDate(cur.getDate() + 1); // start counting from day after start
+  cur.setDate(cur.getDate() + 1);
   while (cur <= end) {
     const dow = cur.getDay();
     if (dow !== 0 && dow !== 6) {
@@ -83,8 +73,13 @@ function calcDiffs(date1, date2) {
     cur.setDate(cur.getDate() + 1);
   }
 
-  return { calendarDays, businessDays, businessDaysMinusHolidays };
+  return { calendarDays, businessDays, businessDaysMinusHolidays, months, weeks };
 }
+
+const today = new Date();
+const maxDate = new Date(today);
+maxDate.setFullYear(today.getFullYear() + 10);
+const maxDateStr = maxDate.toISOString().split("T")[0];
 
 export default function DateDiffApp() {
   const [date1, setDate1] = useState("");
@@ -103,8 +98,6 @@ export default function DateDiffApp() {
     }
   }, [date1, date2]);
 
-  const today = new Date().toISOString().split("T")[0];
-
   return (
     <div style={{
       minHeight: "100vh",
@@ -112,47 +105,47 @@ export default function DateDiffApp() {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      fontFamily: "'Georgia', 'Times New Roman', serif",
       padding: "24px",
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Mono:wght@300;400&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+        * { box-sizing: border-box; }
+
         .card {
           background: #12121a;
           border: 1px solid #2a2a3a;
           border-radius: 4px;
           width: 100%;
-          max-width: 520px;
-          padding: 48px 40px;
+          max-width: 540px;
+          padding: 48px 40px 36px;
         }
 
         .title {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-size: 28px;
-          font-weight: 700;
+          font-family: 'Inter', sans-serif;
+          font-size: 24px;
+          font-weight: 600;
           color: #e8e0d0;
-          letter-spacing: -0.5px;
-          margin: 0 0 6px 0;
+          letter-spacing: -0.3px;
+          margin: 0 0 8px 0;
         }
 
-        .subtitle {
-          font-family: 'DM Mono', monospace;
-          font-size: 11px;
+        .description {
+          font-family: 'Inter', sans-serif;
+          font-size: 12px;
           font-weight: 300;
           color: #555;
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          margin: 0 0 40px 0;
+          line-height: 1.7;
+          margin: 0 0 36px 0;
         }
 
         .label {
-          font-family: 'DM Mono', monospace;
+          font-family: 'Inter', sans-serif;
           font-size: 10px;
-          font-weight: 400;
-          letter-spacing: 2px;
+          font-weight: 500;
+          letter-spacing: 1.5px;
           text-transform: uppercase;
-          color: #666;
+          color: #555;
           display: block;
           margin-bottom: 8px;
         }
@@ -163,10 +156,9 @@ export default function DateDiffApp() {
           border: 1px solid #2a2a3a;
           border-radius: 2px;
           color: #e8e0d0;
-          font-family: 'DM Mono', monospace;
-          font-size: 16px;
+          font-family: 'Inter', sans-serif;
+          font-size: 15px;
           padding: 12px 14px;
-          box-sizing: border-box;
           outline: none;
           transition: border-color 0.2s;
           color-scheme: dark;
@@ -182,7 +174,7 @@ export default function DateDiffApp() {
           gap: 16px;
           margin: 20px 0;
           color: #333;
-          font-family: 'DM Mono', monospace;
+          font-family: 'Inter', sans-serif;
           font-size: 11px;
           letter-spacing: 2px;
         }
@@ -200,14 +192,13 @@ export default function DateDiffApp() {
           padding-top: 32px;
           display: flex;
           flex-direction: column;
-          gap: 0;
         }
 
         .result-row {
           display: flex;
           justify-content: space-between;
-          align-items: baseline;
-          padding: 14px 0;
+          align-items: center;
+          padding: 13px 0;
           border-bottom: 1px solid #1a1a24;
           opacity: 0;
           transform: translateY(8px);
@@ -219,39 +210,53 @@ export default function DateDiffApp() {
           transform: translateY(0);
         }
 
-        .result-row:nth-child(1) { transition-delay: 0.05s; }
-        .result-row:nth-child(2) { transition-delay: 0.15s; }
-        .result-row:nth-child(3) { transition-delay: 0.25s; }
+        .result-row:nth-child(1) { transition-delay: 0.04s; }
+        .result-row:nth-child(2) { transition-delay: 0.10s; }
+        .result-row:nth-child(3) { transition-delay: 0.16s; }
+        .result-row:nth-child(4) { transition-delay: 0.22s; }
+        .result-row:nth-child(5) { transition-delay: 0.28s; }
 
         .result-label {
-          font-family: 'DM Mono', monospace;
+          font-family: 'Inter', sans-serif;
           font-size: 11px;
-          letter-spacing: 1.5px;
+          font-weight: 500;
+          letter-spacing: 1px;
           text-transform: uppercase;
           color: #555;
         }
 
+        .result-number {
+          display: flex;
+          align-items: baseline;
+          gap: 5px;
+        }
+
         .result-value {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-size: 32px;
-          font-weight: 700;
+          font-family: 'Inter', sans-serif;
+          font-size: 28px;
+          font-weight: 600;
           color: #c8a96e;
-          letter-spacing: -1px;
+          letter-spacing: -0.5px;
+          line-height: 1;
+        }
+
+        .result-value.urgent {
+          color: #e07a5f;
         }
 
         .result-unit {
-          font-family: 'DM Mono', monospace;
-          font-size: 10px;
+          font-family: 'Inter', sans-serif;
+          font-size: 11px;
+          font-weight: 400;
           color: #444;
-          letter-spacing: 1px;
-          margin-left: 6px;
+          letter-spacing: 0.5px;
         }
 
         .empty-state {
           margin-top: 36px;
           border-top: 1px solid #1e1e2a;
           padding-top: 28px;
-          font-family: 'DM Mono', monospace;
+          font-family: 'Inter', sans-serif;
           font-size: 11px;
           color: #333;
           letter-spacing: 1.5px;
@@ -259,19 +264,46 @@ export default function DateDiffApp() {
         }
 
         .holiday-note {
-          margin-top: 28px;
-          font-family: 'DM Mono', monospace;
+          margin-top: 20px;
+          font-family: 'Inter', sans-serif;
           font-size: 10px;
-          color: #333;
-          letter-spacing: 1px;
+          color: #2a2a38;
+          letter-spacing: 0.5px;
           line-height: 1.8;
           text-align: center;
+        }
+
+        .footer {
+          margin-top: 32px;
+          padding-top: 20px;
+          border-top: 1px solid #1a1a24;
+          text-align: center;
+          font-family: 'Inter', sans-serif;
+          font-size: 10px;
+          font-weight: 400;
+          color: #333;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+        }
+
+        .footer a {
+          color: #c8a96e;
+          text-decoration: none;
+          transition: color 0.2s;
+        }
+
+        .footer a:hover {
+          color: #e8c88e;
+          text-decoration: underline;
         }
       `}</style>
 
       <div className="card">
         <div className="title">Date Difference</div>
-        <div className="subtitle">Calendar · Business · Working Days</div>
+        <div className="description">
+          Calculates the count of calendar, business, and working days between two dates<br />
+          Helps to know how many days of runway you have left remaining
+        </div>
 
         <div>
           <label className="label">Start Date</label>
@@ -279,7 +311,7 @@ export default function DateDiffApp() {
             type="date"
             className="date-input"
             value={date1}
-            max={today}
+            max={maxDateStr}
             onChange={e => setDate1(e.target.value)}
           />
         </div>
@@ -292,6 +324,7 @@ export default function DateDiffApp() {
             type="date"
             className="date-input"
             value={date2}
+            max={maxDateStr}
             onChange={e => setDate2(e.target.value)}
           />
         </div>
@@ -300,27 +333,45 @@ export default function DateDiffApp() {
           <div className="results">
             <div className={`result-row ${animate ? 'show' : ''}`}>
               <span className="result-label">Calendar Days</span>
-              <span>
+              <div className="result-number">
                 <span className="result-value">{result.calendarDays.toLocaleString()}</span>
                 <span className="result-unit">days</span>
-              </span>
+              </div>
             </div>
             <div className={`result-row ${animate ? 'show' : ''}`}>
-              <span className="result-label">Business Days</span>
-              <span>
+              <span className="result-label">Without Weekends</span>
+              <div className="result-number">
                 <span className="result-value">{result.businessDays.toLocaleString()}</span>
                 <span className="result-unit">days</span>
-              </span>
+              </div>
             </div>
             <div className={`result-row ${animate ? 'show' : ''}`}>
-              <span className="result-label">Working Days</span>
-              <span>
+              <span className="result-label">Minus Holidays</span>
+              <div className="result-number">
                 <span className="result-value">{result.businessDaysMinusHolidays.toLocaleString()}</span>
                 <span className="result-unit">days</span>
-              </span>
+              </div>
+            </div>
+            <div className={`result-row ${animate ? 'show' : ''}`}>
+              <span className="result-label">Weeks</span>
+              <div className="result-number">
+                <span className={`result-value ${result.weeks < 4 ? 'urgent' : ''}`}>
+                  {result.weeks < 4 ? `<${result.weeks + 1}` : result.weeks.toLocaleString()}
+                </span>
+                <span className="result-unit">wks</span>
+              </div>
+            </div>
+            <div className={`result-row ${animate ? 'show' : ''}`}>
+              <span className="result-label">Months</span>
+              <div className="result-number">
+                <span className={`result-value ${result.weeks < 4 ? 'urgent' : ''}`}>
+                  {result.weeks < 4 ? '<1' : result.months.toFixed(2)}
+                </span>
+                <span className="result-unit">mo</span>
+              </div>
             </div>
             <div className="holiday-note">
-              working days excludes us federal holidays
+              minus holidays excludes us federal holidays · months rounded to nearest ¼
             </div>
           </div>
         ) : (
@@ -328,6 +379,13 @@ export default function DateDiffApp() {
             select both dates to calculate
           </div>
         )}
+
+        <div className="footer">
+          App Built and Deployed by{" "}
+          <a href="https://fortismarka.com" target="_blank" rel="noopener noreferrer">
+            Fortis Marka
+          </a>
+        </div>
       </div>
     </div>
   );
