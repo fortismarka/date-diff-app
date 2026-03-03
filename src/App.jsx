@@ -13,6 +13,7 @@ function getNthWeekday(year, month, weekday, n) {
   }
 }
 
+
 function getFederalHolidays(year) {
   const holidays = [
     new Date(year, 0, 1),
