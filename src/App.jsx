@@ -13,7 +13,6 @@ function getNthWeekday(year, month, weekday, n) {
   }
 }
 
-
 function getFederalHolidays(year) {
   const holidays = [
     new Date(year, 0, 1),
@@ -111,99 +110,93 @@ export default function DateDiffApp() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body { font-family: 'Inter', sans-serif; }
 
         .card {
-          background: #12121a;
+          background: #13131a;
           border: 1px solid #2a2a3a;
-          border-radius: 4px;
+          border-radius: 16px;
+          padding: 40px;
           width: 100%;
-          max-width: 540px;
-          padding: 48px 40px 36px;
+          max-width: 420px;
         }
 
-        .title {
+        .app-title {
           font-family: 'Inter', sans-serif;
-          font-size: 24px;
+          font-size: 22px;
           font-weight: 600;
-          color: #e8e0d0;
+          color: #ffffff;
           letter-spacing: -0.3px;
-          margin: 0 0 8px 0;
+          margin-bottom: 4px;
         }
 
-        .description {
-          font-family: 'Inter', sans-serif;
-          font-size: 12px;
-          font-weight: 300;
-          color: #555;
-          line-height: 1.7;
-          margin: 0 0 36px 0;
+        .app-tagline {
+          font-size: 13px;
+          color: #6b6b80;
+          margin-bottom: 32px;
+          font-weight: 400;
         }
 
-        .label {
-          font-family: 'Inter', sans-serif;
-          font-size: 10px;
+        .date-inputs {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          margin-bottom: 28px;
+        }
+
+        .input-group {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .input-label {
+          font-size: 11px;
           font-weight: 500;
-          letter-spacing: 1.5px;
+          color: #6b6b80;
           text-transform: uppercase;
-          color: #555;
-          display: block;
-          margin-bottom: 8px;
+          letter-spacing: 0.8px;
         }
 
         .date-input {
-          width: 100%;
-          background: #0a0a0f;
+          background: #1e1e2e;
           border: 1px solid #2a2a3a;
-          border-radius: 2px;
-          color: #e8e0d0;
+          border-radius: 8px;
+          color: #ffffff;
           font-family: 'Inter', sans-serif;
           font-size: 15px;
           padding: 12px 14px;
+          width: 100%;
           outline: none;
           transition: border-color 0.2s;
-          color-scheme: dark;
         }
 
         .date-input:focus {
-          border-color: #c8a96e;
+          border-color: #4a4a6a;
         }
 
-        .divider {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          margin: 20px 0;
-          color: #333;
-          font-family: 'Inter', sans-serif;
-          font-size: 11px;
-          letter-spacing: 2px;
-        }
-
-        .divider::before, .divider::after {
-          content: '';
-          flex: 1;
-          height: 1px;
-          background: #1e1e2a;
+        .date-input::-webkit-calendar-picker-indicator {
+          filter: invert(0.5);
+          cursor: pointer;
         }
 
         .results {
-          margin-top: 36px;
-          border-top: 1px solid #1e1e2a;
-          padding-top: 32px;
           display: flex;
           flex-direction: column;
+          gap: 2px;
         }
 
         .result-row {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 13px 0;
-          border-bottom: 1px solid #1a1a24;
+          padding: 12px 0;
+          border-bottom: 1px solid #1e1e2e;
           opacity: 0;
-          transform: translateY(8px);
-          transition: opacity 0.4s ease, transform 0.4s ease;
+          transform: translateY(6px);
+          transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
         .result-row.show {
@@ -211,19 +204,20 @@ export default function DateDiffApp() {
           transform: translateY(0);
         }
 
-        .result-row:nth-child(1) { transition-delay: 0.04s; }
-        .result-row:nth-child(2) { transition-delay: 0.10s; }
-        .result-row:nth-child(3) { transition-delay: 0.16s; }
-        .result-row:nth-child(4) { transition-delay: 0.22s; }
-        .result-row:nth-child(5) { transition-delay: 0.28s; }
+        .result-row:nth-child(1) { transition-delay: 0.05s; }
+        .result-row:nth-child(2) { transition-delay: 0.1s; }
+        .result-row:nth-child(3) { transition-delay: 0.15s; }
+        .result-row:nth-child(4) { transition-delay: 0.2s; }
+        .result-row:nth-child(5) { transition-delay: 0.25s; }
+
+        .result-row:last-of-type {
+          border-bottom: none;
+        }
 
         .result-label {
-          font-family: 'Inter', sans-serif;
-          font-size: 11px;
-          font-weight: 500;
-          letter-spacing: 1px;
-          text-transform: uppercase;
-          color: #555;
+          font-size: 13px;
+          color: #6b6b80;
+          font-weight: 400;
         }
 
         .result-number {
@@ -233,101 +227,79 @@ export default function DateDiffApp() {
         }
 
         .result-value {
-          font-family: 'Inter', sans-serif;
-          font-size: 28px;
+          font-size: 22px;
           font-weight: 600;
-          color: #c8a96e;
+          color: #ffffff;
+          font-family: 'Inter', sans-serif;
           letter-spacing: -0.5px;
-          line-height: 1;
         }
 
         .result-value.urgent {
-          color: #e07a5f;
+          color: #f59e0b;
         }
 
         .result-unit {
-          font-family: 'Inter', sans-serif;
-          font-size: 11px;
+          font-size: 12px;
+          color: #4a4a6a;
           font-weight: 400;
-          color: #444;
-          letter-spacing: 0.5px;
-        }
-
-        .empty-state {
-          margin-top: 36px;
-          border-top: 1px solid #1e1e2a;
-          padding-top: 28px;
-          font-family: 'Inter', sans-serif;
-          font-size: 11px;
-          color: #333;
-          letter-spacing: 1.5px;
-          text-align: center;
         }
 
         .holiday-note {
-          margin-top: 20px;
-          font-family: 'Inter', sans-serif;
-          font-size: 10px;
-          color: #2a2a38;
-          letter-spacing: 0.5px;
-          line-height: 1.8;
+          font-size: 11px;
+          color: #3a3a5a;
+          margin-top: 12px;
+          line-height: 1.5;
+        }
+
+        .empty-state {
           text-align: center;
+          color: #3a3a5a;
+          font-size: 13px;
+          padding: 20px 0;
         }
 
         .footer {
-          margin-top: 32px;
-          padding-top: 20px;
-          border-top: 1px solid #1a1a24;
+          margin-top: 28px;
+          font-size: 11px;
+          color: #3a3a5a;
           text-align: center;
-          font-family: 'Inter', sans-serif;
-          font-size: 10px;
-          font-weight: 400;
-          color: #333;
-          letter-spacing: 1px;
-          text-transform: uppercase;
         }
 
         .footer a {
-          color: #c8a96e;
+          color: #c9a84c;
           text-decoration: none;
-          transition: color 0.2s;
         }
 
         .footer a:hover {
-          color: #e8c88e;
-          text-decoration: underline;
+          color: #e0c070;
         }
       `}</style>
 
       <div className="card">
-        <div className="title">Date Difference</div>
-        <div className="description">
-          Calculates the count of calendar, business, and working days between two dates<br />
-          Helps to know how many days of runway you have left remaining
-        </div>
+        <div className="app-title">Date Difference Calculator</div>
+        <div className="app-tagline">Helps to know how many days of runway you have</div>
 
-        <div>
-          <label className="label">Start Date</label>
-          <input
-            type="date"
-            className="date-input"
-            value={date1}
-            max={maxDateStr}
-            onChange={e => setDate1(e.target.value)}
-          />
-        </div>
-
-        <div className="divider">to</div>
-
-        <div>
-          <label className="label">End Date</label>
-          <input
-            type="date"
-            className="date-input"
-            value={date2}
-            max={maxDateStr}
-            onChange={e => setDate2(e.target.value)}
-          />
+        <div className="date-inputs">
+          <div className="input-group">
+            <label className="input-label">Start Date</label>
+            <input
+              type="date"
+              className="date-input"
+              value={date1}
+              max={maxDateStr}
+              onChange={e => setDate1(e.target.value)}
+            />
+          </div>
+          <div className="input-group">
+            <label className="input-label">End Date</label>
+            <input
+              type="date"
+              className="date-input"
+              value={date2}
+              max={maxDateStr}
+              onChange={e => setDate2(e.target.value)}
+            />
+          </div>
         </div>
 
         {result ? (
